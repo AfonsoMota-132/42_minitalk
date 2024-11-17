@@ -1,18 +1,18 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   server.c                                           :+:      :+:    :+:   */
+/*   server_bonus.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: afogonca <afogonca@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/16 13:56:59 by afogonca          #+#    #+#             */
-/*   Updated: 2024/11/16 13:57:05 by afogonca         ###   ########.fr       */
+/*   Created: 2024/11/17 18:11:34 by afogonca          #+#    #+#             */
+/*   Updated: 2024/11/17 18:13:39 by afogonca         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../incs/minitalk.h"
 
-void	put_char(int *c)
+void	put_char(int *c, siginfo_t *info)
 {
 	int				i;
 	unsigned char	char_in;
@@ -22,7 +22,10 @@ void	put_char(int *c)
 	while (i >= 0)
 		char_in = char_in * 2 + c[i--];
 	if (!char_in)
+	{
 		ft_printf("END OF MESSAGE\n");
+		kill(info->si_pid, SIGUSR1);
+	}
 	else
 		ft_printf("%c", char_in);
 }
@@ -35,11 +38,12 @@ void	fill_null(int bytes[8])
 		bytes[bits] = 0;
 }
 
-void	signal_handler(int signum)
+void	signal_handler(int signum, siginfo_t *info, void *content)
 {
 	static int	bits;
 	static int	bytes[8];
 
+	(void) content;
 	if (!bits)
 		bits = 0;
 	if (signum == SIGUSR1)
@@ -49,7 +53,7 @@ void	signal_handler(int signum)
 	bits++;
 	if (bits == 8)
 	{
-		put_char(bytes);
+		put_char(bytes, info);
 		bits = 0;
 		fill_null(bytes);
 	}
@@ -60,8 +64,8 @@ int	main(void)
 	pid_t				pid;
 	struct sigaction	signal;
 
-	signal.sa_handler = &signal_handler;
-	signal.sa_flags = 0;
+	signal.sa_sigaction = &signal_handler;
+	signal.sa_flags = SA_SIGINFO;
 	pid = getpid();
 	if (pid == -1)
 	{

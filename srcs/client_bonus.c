@@ -28,7 +28,7 @@ void	signal_sender(char *str, pid_t pid)
 			else
 				kill(pid, SIGUSR2);
 			octet /= 2;
-			usleep(150);
+			usleep(100);
 		}
 		str++;
 	}
@@ -43,7 +43,16 @@ void	end_signal(pid_t pid)
 		{
 			kill(pid, SIGUSR1);
 			usleep(100);
-		}
+	}
+}
+
+void	signal_handler(int signum)
+{
+	if (signum == SIGUSR1)
+	{
+		ft_printf("Message Received!\n");
+		exit (0);
+	}
 }
 
 int	main(int ac, char **av)
@@ -52,6 +61,7 @@ int	main(int ac, char **av)
 
 	if (ac == 3)
 	{
+		signal(SIGUSR1, &signal_handler);
 		pid = ft_atoi(av[1]);
 		if (kill(pid, 0))
 		{
@@ -61,5 +71,7 @@ int	main(int ac, char **av)
 		signal_sender(av[2], pid);
 		signal_sender("\n", pid);
 		end_signal(pid);
+		while (1)
+			pause();
 	}
 }
