@@ -21,9 +21,9 @@
 
 typedef struct s_data
 {
-	int	bits;
+	int		bits;
 	int		bytes;
 	int		received;
-	char *msg;
+	char	*msg;
 } t_data;
 #endif

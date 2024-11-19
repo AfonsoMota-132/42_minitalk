@@ -47,15 +47,16 @@ void	end_signal(pid_t pid)
 
 void	size_sender(int size, pid_t pid)
 {
-	int	bits;
+		int	bits;
 
-	bits = 32;
-	while (bits--)
+	bits = 31;
+	while (bits >= 0)
 	{
 		if (size >> bits & 1)
 			kill(pid, SIGUSR1);
 		else
 			kill(pid, SIGUSR2);
+		bits--;
 		usleep(200);
 	}
 }
