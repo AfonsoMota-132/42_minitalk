@@ -19,16 +19,15 @@ void	signal_sender(char *str, pid_t pid)
 
 	while (*str != '\0')
 	{
-		bit = 8;
+		bit = sizeof(char) * 8;
 		octet = *str;
 		while (bit--)
 		{
-			if (octet % 2 == 0)
+			if (octet >> bit & 1)
 				kill(pid, SIGUSR1);
 			else
 				kill(pid, SIGUSR2);
-			octet /= 2;
-			usleep(150);
+			usleep(200);
 		}
 		str++;
 	}
@@ -41,14 +40,30 @@ void	end_signal(pid_t pid)
 		bit = 8;
 		while (bit--)
 		{
-			kill(pid, SIGUSR1);
-			usleep(100);
+			kill(pid, SIGUSR2);
+			usleep(200);
 		}
+}
+
+void	size_sender(int size, pid_t pid)
+{
+	int	bits;
+
+	bits = 32;
+	while (bits--)
+	{
+		if (size >> bits & 1)
+			kill(pid, SIGUSR1);
+		else
+			kill(pid, SIGUSR2);
+		usleep(200);
+	}
 }
 
 int	main(int ac, char **av)
 {
-	pid_t pid;
+	pid_t	pid;
+	int		len;
 
 	if (ac == 3)
 	{
@@ -58,8 +73,10 @@ int	main(int ac, char **av)
 			ft_printf("Invalide Pid\n");
 			exit (1);
 		}
+		len = ft_strlen(av[2]);
+		ft_printf("%i", len);
+		size_sender(len, pid);
 		signal_sender(av[2], pid);
-		signal_sender("\n", pid);
 		end_signal(pid);
 	}
 }

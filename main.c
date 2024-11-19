@@ -1,29 +1,33 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   minitalk.h                                         :+:      :+:    :+:   */
+/*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: afogonca <afogonca@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/16 14:06:46 by afogonca          #+#    #+#             */
-/*   Updated: 2024/11/16 14:07:23 by afogonca         ###   ########.fr       */
+/*   Created: 2024/11/19 09:24:52 by afogonca          #+#    #+#             */
+/*   Updated: 2024/11/19 09:27:15 by afogonca         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef MINITALK_H
-# define MINITALK_H
+#include <stdio.h>
 
-# include "../libs/libft/libft.h"
-# include <stdio.h>
-# include <unistd.h>
-# include <signal.h>
-# include <stdlib.h>
-
-typedef struct s_data
+int	main(void)
 {
-	int	bits;
-	int		bytes;
-	int		received;
-	char *msg;
-} t_data;
-#endif
+	int	byte[8] = {0, 0, 0, 0, 0, 0, 1, 1};
+	int	i;
+	int	bit;
+
+	i = -1;
+	bit = 0;
+	/*while (++i < 8)*/
+	/*{*/
+	/*	if (byte[i] == 1)*/
+	/*		bit |= 1 << (7 - i);*/
+	/*	else if (byte[i] == 0)*/
+	/*		bit &= ~(1 << (7 - i));*/
+	/*} */
+	bit |= 1 << (7 - 7);
+	bit |= 1 << (7 - 6);
+	printf("%i", bit);
+}

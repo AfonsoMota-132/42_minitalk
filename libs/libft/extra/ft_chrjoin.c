@@ -18,16 +18,23 @@ char	*ft_chrjoin(char const *str, char const chr)
 	size_t	i;
 	char	*dstr;
 
-	i = 0;
-	if (!str && !chr)
+	i = -1;
+	if (!chr)
 		return (NULL);
-	size = ft_strlen(str) + 1;
+	if (!str)
+		size = 1;
+	else
+		size = ft_strlen(str) + 1;
 	dstr = (char *) malloc(sizeof(char) * (size + 1));
-	if (str == NULL)
+	if (dstr == NULL)
 		return (NULL);
-	while (*str != '\0')
-		dstr[i++] = *(str++);
-	dstr[i++] = chr;
+	if (str != NULL)
+	{
+		while (str[++i] != '\0')
+			dstr[i] = str[i];
+	}
+	dstr[i] = chr;
+	i++;
 	dstr[i] = '\0';
 	return (dstr);
 }
