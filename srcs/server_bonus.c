@@ -1,61 +1,79 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   server_bonus.c                                     :+:      :+:    :+:   */
+/*   server.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: afogonca <afogonca@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/17 18:11:34 by afogonca          #+#    #+#             */
-/*   Updated: 2024/11/17 18:13:39 by afogonca         ###   ########.fr       */
+/*   Created: 2024/11/16 13:56:59 by afogonca          #+#    #+#             */
+/*   Updated: 2024/11/16 13:57:05 by afogonca         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../incs/minitalk.h"
+#include <signal.h>
 
-void	put_char(int *c, siginfo_t *info)
+void	calloc_size(t_data *data)
 {
-	int				i;
-	unsigned char	char_in;
-
-	i = 7;
-	char_in = 0;
-	while (i >= 0)
-		char_in = char_in * 2 + c[i--];
-	if (!char_in)
+	if (data->bits == 32 && !data->received)
 	{
-		ft_printf("END OF MESSAGE\n");
+		data->msg = malloc((data->bytes + 1) * sizeof(char));
+		if (!data->msg)
+			return ;
+		data->size = data->bytes;
+		data->msg[data->bytes] = '\0';
+		data->received = 1;
+		data->bits = 0;
+	}
+}
+
+void	put_char(t_data *data, siginfo_t *info)
+{
+	static char		*str;
+	static int		i;
+
+	if (!str)
+		str = "";
+	if (!data->bytes)
+	{
+		ft_printf("before\n");
+		ft_printf("%s\n", data->msg);
+		ft_printf("after\n");
+		write(1, "\n", 1);
+		data->received = 0;
+		free(data->msg);
+		i = 0;
 		kill(info->si_pid, SIGUSR1);
+		data->msg = NULL;
 	}
 	else
-		ft_printf("%c", char_in);
-}
-void	fill_null(int bytes[8])
-{
-	int	bits;
-
-	bits = -1;
-	while (++bits < 8)
-		bytes[bits] = 0;
+	{
+		data->msg[i] = data->bytes;
+		i++;
+	}
 }
 
 void	signal_handler(int signum, siginfo_t *info, void *content)
 {
-	static int	bits;
-	static int	bytes[8];
+	static t_data	data;
 
 	(void) content;
-	if (!bits)
-		bits = 0;
-	if (signum == SIGUSR1)
-		bytes[bits] = 0; 
-	else if (signum == SIGUSR2)
-		bytes[bits] = 1;
-	bits++;
-	if (bits == 8)
+	if (!data.bits)
+		data.bytes = 0;
+	if (signum == SIGUSR1 && data.received)
+		data.bytes |= 1 << (7 - data.bits);
+	else if (signum == SIGUSR2 && data.received)
+		data.bytes &= ~(1 << (7 - data.bits));
+	else if (signum == SIGUSR1 && !data.received)
+		data.bytes |= 1 << (31 - data.bits);
+	else if (signum == SIGUSR2 && !data.received)
+		data.bytes &= ~(1 << (31 - data.bits));
+	++data.bits;
+	calloc_size(&data);
+	if (data.bits == 8 && data.received == 1)
 	{
-		put_char(bytes, info);
-		bits = 0;
-		fill_null(bytes);
+		put_char(&data, info);
+		data.bits = 0;
 	}
 }
 
@@ -64,6 +82,7 @@ int	main(void)
 	pid_t				pid;
 	struct sigaction	signal;
 
+	sigemptyset(&signal.sa_mask);
 	signal.sa_sigaction = &signal_handler;
 	signal.sa_flags = SA_SIGINFO;
 	pid = getpid();

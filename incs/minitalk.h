@@ -19,11 +19,14 @@
 # include <signal.h>
 # include <stdlib.h>
 
+# define PAUSE 100
+
 typedef struct s_data
 {
+	int		size;
 	int		bits;
 	int		bytes;
 	int		received;
 	char	*msg;
-} t_data;
+}	t_data;
 #endif

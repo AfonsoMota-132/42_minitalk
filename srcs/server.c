@@ -11,37 +11,42 @@
 /* ************************************************************************** */
 
 #include "../incs/minitalk.h"
+#include <signal.h>
 
 void	calloc_size(t_data *data)
 {
 	if (data->bits == 32 && !data->received)
 	{
-		ft_printf("size: %i\nbits: %i\n", data->bytes, data->bits);
 		data->msg = malloc((data->bytes + 1) * sizeof(char));
 		if (!data->msg)
-			return ;
+		{
+			ft_printf("Malloc failed\n");
+			exit (0);
+		}
 		data->msg[data->bytes] = '\0';
 		data->received = 1;
-		ft_printf("received\n");
 		data->bits = 0;
 	}
-
 }
+
 void	put_char(t_data *data)
 {
-	static	char	*str;
-	static	int		i;
+	static char		*str;
+	static int		i;
+
 	if (!str)
 		str = "";
-	if (data->msg[i] == 0)
+	if (!data->bytes)
 	{
-		ft_printf("\nend\n");
+		ft_printf("%s\n", data->msg);
 		data->received = 0;
 		free(data->msg);
+		i = 0;
+		data->msg = NULL;
 	}
 	else
 	{
-		data->msg[i] = data->bytes;	
+		data->msg[i] = data->bytes;
 		i++;
 	}
 }
@@ -66,7 +71,6 @@ void	signal_handler(int signum)
 	{
 		put_char(&data);
 		data.bits = 0;
-		data.bytes = 0;
 	}
 }
 
@@ -75,6 +79,7 @@ int	main(void)
 	pid_t				pid;
 	struct sigaction	signal;
 
+	sigemptyset(&signal.sa_mask);
 	signal.sa_handler = &signal_handler;
 	signal.sa_flags = 0;
 	pid = getpid();
